@@ -1,0 +1,66 @@
+---
+alwaysApply: true
+---
+
+You are an expert in TypeScript, Angular, and scalable web application development. You write maintainable, performant, and accessible code following Angular and TypeScript best practices.
+## TypeScript Best Practices
+- Use strict type checking
+- Prefer type inference when the type is obvious
+- Avoid the `any` type; use `unknown` when type is uncertain
+## Angular Best Practices
+- Mantieni il numero di componenti per cartella basso (1–2 al massimo)
+- Evita di mettere logica di business nei componenti
+- Evita i rxjs subscribe() manuali, usa async pipe o toSignal
+- Usa trackBy con @for/*ngFor per evitare problemi di performance
+- Quando possibile, usa @Input({ required: true }) per segnare input obbligatori
+- Fai uso delle direttive strutturali personalizzate per riutilizzare controlli di flusso complessi
+- Preferisci HttpClient con typed responses (HttpClient.get<T>())
+- Always use standalone components over NgModules
+- Do NOT set `standalone: true` inside the `@Component`, `@Directive` and `@Pipe` decorators
+- Use signals for state management
+- Implement lazy loading for feature routes
+- Use `NgOptimizedImage` for all static images.
+- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
+## Components
+- Keep components small and focused on a single responsibility
+- Use `input()` and `output()` functions instead of decorators
+- Use `computed()` for derived state
+- Set `changeDetection: ChangeDetectionStrategy.OnPush` in `@Component` decorator
+- Prefer inline templates for small components
+- Prefer Reactive forms instead of Template-driven ones
+- Do NOT use `ngClass`, use `class` bindings instead
+- DO NOT use `ngStyle`, use `style` bindings instead
+## State Management  & Signals
+- Raggruppa i segnali in store locali per feature componenti complesse
+- Estrai gli effetti (effect()) in servizi se sono condivisi
+- Non abusare di effect(), mantieni la logica pura
+- Usa batch() per aggiornare più segnali contemporaneamente
+- Evita side-effect dentro computed() (usali solo per derivare valori)
+- Use signals for local component state
+- Use `computed()` for derived state
+- Keep state transformations pure and predictable
+- Do NOT use `mutate` on signals, use `update` or `set` instead
+## Templates
+- Keep templates simple and avoid complex logic
+- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
+- Use the async pipe to handle observables
+## Services
+- Design services around a single responsibility
+- Use the `providedIn: 'root'` option for singleton services
+- Use the `inject()` function instead of constructor injection
+## Acessibilità (a11y)
+- Usa aria-* attributes nei componenti interattivi
+- Assicurati che tutti i form abbiano etichette (<label> for)
+- Usa il CDK a11y per verifiche automatiche
+- Evita focus trap non intenzionali
+- Fai attenzione al contrasto dei colori
+## Performance
+- Usa ngDevMode per disabilitare dev tools in produzione
+- Lazy load immagini con NgOptimizedImage e loading="lazy"
+- Usa trackBy con liste per ridurre il DOM diffing
+- Minimizza i bindings nel template (evita espressioni pesanti nel markup)
+- Usa zone-less (Zone.js optional) quando possibile con NgZone: 'noop'
+- Creare un web worker quando ritieni che le operazioni da fare risultano troppo pesanti da far gestire all'applicazione 
+## Dependency Injection
+- Non usare il costruttore per iniettare servizi.
+- Usa la funzione inject() direttamente nel corpo della classe o in proprietà di classe:

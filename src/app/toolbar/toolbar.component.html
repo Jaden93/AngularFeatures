@@ -1,0 +1,8 @@
+<mat-toolbar>
+  <ng-content select="[toolbar-title]"></ng-content>
+  <span class="example-spacer"></span>
+  <button matIconButton class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="goToContent2()">
+    <mat-icon>favorite</mat-icon>
+  </button>
+  <ng-content select="[toolbar-share]"></ng-content>
+</mat-toolbar>

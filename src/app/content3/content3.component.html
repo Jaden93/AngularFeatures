@@ -1,0 +1,12 @@
+<app-toolbar>
+  <span toolbar-title>{{ toolbarTitle }}</span>
+  <button toolbar-share matIconButton aria-label="Share" (click)="toolbarTitle = 'Hai cliccato share!'">
+    <mat-icon>share</mat-icon>
+  </button>
+</app-toolbar>
+
+<h1>Benvenuto in Content3</h1>
+<h2>Titolo dinamico: {{ toolbarTitle }}</h2>
+
+<input [(ngModel)]="toolbarTitle" placeholder="Cambia titolo toolbar" />
+<button (click)="toolbarTitle = 'Titolo Aggiornato!'">Aggiorna Titolo</button> 
