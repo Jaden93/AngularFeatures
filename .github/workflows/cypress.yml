@@ -25,7 +25,7 @@ jobs:
         run: npm run build --if-present
 
       - name: Avvia server Angular
-        run: npx ng serve --port 4200 --disable-host-check --configuration development & npx wait-on http://localhost:4200
+        run: npx ng serve --port 4500 & npx wait-on http://localhost:4500
 
       - name: Esegui Cypress
         run: npm run cy:run
