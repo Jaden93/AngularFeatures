@@ -1,0 +1,164 @@
+name: Build e Deploy dopo Cypress
+
+on:
+  workflow_run:
+    workflows: ["Cypress Tests"]
+    types:
+      - completed
+    branches: [main]
+
+# Permessi necessari per GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevenire deploy multipli contemporanei
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  check-cypress-success:
+    name: Verifica successo Cypress
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    outputs:
+      deploy-ready: ${{ steps.check.outputs.ready }}
+    
+    steps:
+      - name: Verifica stato workflow
+        id: check
+        run: |
+          echo "Cypress workflow completato con successo"
+          echo "ready=true" >> $GITHUB_OUTPUT
+
+  build-and-deploy:
+    name: Build e Deploy Angular
+    runs-on: ubuntu-latest
+    needs: check-cypress-success
+    if: needs.check-cypress-success.outputs.deploy-ready == 'true'
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Installa dipendenze
+        run: npm ci
+
+      - name: Build produzione
+        run: |
+          npm run build -- --configuration=production --base-href=/${{ github.event.repository.name }}/
+        env:
+          NODE_ENV: production
+
+      - name: Ottimizza per GitHub Pages
+        run: |
+          # Crea 404.html per SPA routing
+          cp dist/index.html dist/404.html
+          
+          # Crea .nojekyll per evitare processing Jekyll
+          touch dist/.nojekyll
+          
+          # Log delle dimensioni build
+          echo "📦 Dimensioni build:"
+          du -sh dist/
+          ls -la dist/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './dist'
+
+      - name: Deploy su GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+      - name: Notifica successo deploy
+        if: success()
+        run: |
+          echo "✅ Deploy completato con successo!"
+          echo "🌐 URL: ${{ steps.deployment.outputs.page_url }}"
+
+  security-audit:
+    name: Audit Sicurezza
+    runs-on: ubuntu-latest
+    needs: check-cypress-success
+    if: needs.check-cypress-success.outputs.deploy-ready == 'true'
+    
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Installa dipendenze
+        run: npm ci
+
+      - name: Audit vulnerabilità
+        run: |
+          echo "🔍 Controllo vulnerabilità..."
+          npm audit --audit-level=moderate
+          
+      - name: Controllo licenze
+        run: |
+          echo "📄 Controllo licenze dipendenze..."
+          npx license-checker --summary
+
+  performance-check:
+    name: Controllo Performance
+    runs-on: ubuntu-latest
+    needs: check-cypress-success
+    if: needs.check-cypress-success.outputs.deploy-ready == 'true'
+    
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Installa dipendenze
+        run: npm ci
+
+      - name: Analisi bundle
+        run: |
+          echo "📊 Analisi dimensioni bundle..."
+          npm run build -- --configuration=production --stats-json
+          
+          # Installa webpack-bundle-analyzer se non presente
+          npm install -g webpack-bundle-analyzer
+          
+          # Genera report (se stats.json esiste)
+          if [ -f "dist/stats.json" ]; then
+            webpack-bundle-analyzer dist/stats.json dist --report --mode static
+            echo "📈 Report generato in dist/report.html"
+          fi
+
+      - name: Upload report performance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: dist/report.html
+          retention-days: 7
