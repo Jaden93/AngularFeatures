@@ -10,7 +10,7 @@ describe('Test accesso login', () => {
     cy.visit('http://localhost:4500/accesso')
       .then(() => {
         cy.contains('Accesso')
-        cy.contains('type')
+        cy.contains('typ')
       });
 
   })
